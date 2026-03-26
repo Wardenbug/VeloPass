@@ -3,11 +3,15 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using VeloPass.Infrastructure;
 using VeloPass.Presentation;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddOpenApi();
+
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))

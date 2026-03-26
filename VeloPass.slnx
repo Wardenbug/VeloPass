@@ -5,6 +5,9 @@
     <File Path="Directory.Build.props" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/VeloPass.Application/VeloPass.Application.csproj" />
+    <Project Path="src/VeloPass.Domain/VeloPass.Domain.csproj" />
+    <Project Path="src/VeloPass.Infrastructure/VeloPass.Infrastructure.csproj" />
     <Project Path="src/VeloPass.Presentation/VeloPass.Presentation.csproj" />
   </Folder>
 </Solution>
