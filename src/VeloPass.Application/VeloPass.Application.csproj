@@ -11,6 +11,17 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="WolverineFx" Version="5.25.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\VeloPass.Domain\VeloPass.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+        <HintPath>..\..\..\..\..\..\usr\share\dotnet\shared\Microsoft.AspNetCore.App\10.0.5\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

@@ -9,6 +9,8 @@ public sealed class ApplicationIdentityDbContext(
 {
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+        
         base.OnModelCreating(builder);
 
         builder.HasDefaultSchema(Schemes.Identity);
