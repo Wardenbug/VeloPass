@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -47,6 +48,8 @@ public class JwtService(IOptions<JwtAuthOptions> options) : IJwtService
 
     private static string CreateRefreshToken()
     {
-        return string.Empty;
+        byte[] randomBytes = RandomNumberGenerator.GetBytes(32);
+         
+        return Convert.ToBase64String(randomBytes);
     }
 }

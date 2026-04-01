@@ -10,11 +10,12 @@ internal static class AuthenticationEndpoints
     public static IEndpointRouteBuilder MapAuthenticationEndpoints(this IEndpointRouteBuilder routeBuilder)
     {
         routeBuilder.MapPost("auth/register", Register);
+        routeBuilder.MapPost("auth/refresh", RefreshToken);
         
         return routeBuilder;
     }
 
-    private static async Task<AccessTokenDto> Register(
+    private static async Task<IResult> Register(
         RegisterUserRequest request, 
         IMessageBus messageBus,
         CancellationToken cancellationToken)
@@ -22,6 +23,13 @@ internal static class AuthenticationEndpoints
         var result = await messageBus.InvokeAsync<AccessTokenDto>(
             new RegisterUserCommand(request.IdToken), cancellationToken);
 
-        return result;
+        return Results.Ok(result);
+    }
+
+    private static async Task<AccessTokenDto> RefreshToken(
+        RefreshTokenRequest request, 
+        CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

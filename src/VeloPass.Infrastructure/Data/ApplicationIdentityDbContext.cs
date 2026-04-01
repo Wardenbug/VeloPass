@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using VeloPass.Infrastructure.Configurations;
 
 namespace VeloPass.Infrastructure.Data;
 
@@ -22,5 +23,7 @@ public sealed class ApplicationIdentityDbContext(
         builder.Entity<IdentityUserClaim<string>>().ToTable("asp_net_user_claims");
         builder.Entity<IdentityUserLogin<string>>().ToTable("asp_net_user_logins");
         builder.Entity<IdentityUserToken<string>>().ToTable("asp_net_user_tokens");
+
+        builder.ApplyConfiguration(new RefreshTokenConfiguration());
     }
 }

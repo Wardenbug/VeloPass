@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Options;
 using VeloPass.Application.Abstractions;
+using VeloPass.Application.Authentication;
 using VeloPass.Application.Identity;
 using VeloPass.Domain.Users;
+using VeloPass.Infrastructure.Authentication;
 using VeloPass.Infrastructure.Data;
 
 namespace VeloPass.Infrastructure.Users;
@@ -12,9 +15,11 @@ public sealed class ExternalUserRegistrationService(
     ApplicationDbContext applicationDbContext,
     ApplicationIdentityDbContext applicationIdentityDbContext,
     IUserRepository userRepository,
-    UserManager<IdentityUser> userManager) : IExternalUserRegistrationService
+    UserManager<IdentityUser> userManager,
+    IJwtService jwtService,
+    IOptions<JwtAuthOptions> options) : IExternalUserRegistrationService
 {
-    public async Task<User> RegisterAsync(
+    public async Task<AccessTokenDto> RegisterAsync(
         ValidatedExternalIdentity externalIdentity, 
         CancellationToken cancellationToken = default)
     {
@@ -28,7 +33,7 @@ public sealed class ExternalUserRegistrationService(
 
         if (user is not null)
         {
-            return user;
+            throw new ArgumentException($"User with email {externalIdentity.Email} already exists");
         }
 
         var identityUser = new IdentityUser
@@ -45,10 +50,23 @@ public sealed class ExternalUserRegistrationService(
         
         userRepository.Add(newUser);
         
+        var token = jwtService.GenerateJwtToken(new TokenRequest(newUser.Id.ToString()));
+
+        var refreshToken = new RefreshTokenEntity
+        {
+            Id = Guid.CreateVersion7(),
+            UserId = identityUser.Id,
+            Token = token.RefreshToken,
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(options.Value.RefreshTokenExpirationInMinutes),
+        };
+        
+        applicationIdentityDbContext.Add(refreshToken);
+        
         await applicationDbContext.SaveChangesAsync(cancellationToken);
+        await applicationIdentityDbContext.SaveChangesAsync(cancellationToken);
         
         await transaction.CommitAsync(cancellationToken);
         
-        return newUser;
+        return token;
     }
 }
