@@ -1,15 +1,19 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using VeloPass.Application.Abstractions;
 using VeloPass.Application.Authentication;
+using VeloPass.Infrastructure.Data;
 
 namespace VeloPass.Infrastructure.Authentication;
 
-public class JwtService(IOptions<JwtAuthOptions> options) : IJwtService
+public sealed class JwtService(
+    IOptions<JwtAuthOptions> options,
+    ApplicationIdentityDbContext applicationIdentityDbContext) : IJwtService
 {
     private readonly JwtAuthOptions _jwtAuthOptions = options.Value;
     
@@ -18,6 +22,32 @@ public class JwtService(IOptions<JwtAuthOptions> options) : IJwtService
     {
         ArgumentNullException.ThrowIfNull(request);
         return new AccessTokenDto(CreateAccessToken(request), CreateRefreshToken());
+    }
+
+    public async Task<AccessTokenDto> RefreshJwtToken(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        var token = await applicationIdentityDbContext.Set<RefreshTokenEntity>()
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken, cancellationToken);
+
+        if (token is null)
+        {
+            throw new ArgumentNullException(nameof(refreshToken));
+        }
+
+        if (token.ExpiresAtUtc < DateTime.UtcNow)
+        {
+            throw new InvalidOperationException("Refresh token is expired");
+        }
+
+        var accessToken = GenerateJwtToken(new TokenRequest(token.User.Id));
+
+        token.Token = accessToken.RefreshToken;
+        token.ExpiresAtUtc = DateTime.UtcNow.AddMinutes(_jwtAuthOptions.RefreshTokenExpirationInMinutes);
+        
+        await applicationIdentityDbContext.SaveChangesAsync(cancellationToken);
+
+        return accessToken;
     }
 
     private string CreateAccessToken(TokenRequest request)
