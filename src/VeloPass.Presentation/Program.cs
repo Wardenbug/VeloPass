@@ -3,6 +3,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Scalar.AspNetCore;
 using VeloPass.Application;
 using VeloPass.Infrastructure;
 using VeloPass.Presentation;
@@ -49,6 +50,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 app.UseRouting();
 app.UseCors("FrontendAppPolicy");
