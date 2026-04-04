@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using VeloPass.Application.Abstractions;
 using VeloPass.Application.Authentication;
 using VeloPass.Application.Identity;
+using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Users;
 using VeloPass.Infrastructure.Authentication;
 using VeloPass.Infrastructure.Data;
@@ -19,7 +20,7 @@ public sealed class ExternalUserRegistrationService(
     IJwtService jwtService,
     IOptions<JwtAuthOptions> options) : IExternalUserRegistrationService
 {
-    public async Task<AccessTokenDto> RegisterAsync(
+    public async Task<Result<AccessTokenDto>> RegisterAsync(
         ValidatedExternalIdentity externalIdentity, 
         CancellationToken cancellationToken = default)
     {
@@ -33,7 +34,7 @@ public sealed class ExternalUserRegistrationService(
 
         if (user is not null)
         {
-            throw new ArgumentException($"User with email {externalIdentity.Email} already exists");
+            return Result.Invalid<AccessTokenDto>("Email is already registered");
         }
 
         var identityUser = new IdentityUser
@@ -67,6 +68,6 @@ public sealed class ExternalUserRegistrationService(
         
         await transaction.CommitAsync(cancellationToken);
         
-        return token;
+        return Result.Ok(new AccessTokenDto(token.AccessToken, token.RefreshToken));
     }
 }

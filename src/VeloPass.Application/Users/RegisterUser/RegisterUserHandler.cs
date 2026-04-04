@@ -2,7 +2,6 @@ using VeloPass.Application.Abstractions;
 using VeloPass.Application.Authentication;
 using VeloPass.Application.Identity;
 using VeloPass.Domain.Abstractions;
-using VeloPass.Domain.Users;
 
 namespace VeloPass.Application.Users.RegisterUser;
 
@@ -11,7 +10,7 @@ public sealed class RegisterUserHandler(
     IExternalUserRegistrationService externalUserRegistrationService)
 {
     
-    public async Task<AccessTokenDto> Handle(RegisterUserCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<AccessTokenDto>> Handle(RegisterUserCommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -19,9 +18,19 @@ public sealed class RegisterUserHandler(
             ExternalIdentityProvider.Google,
             command.IdToken, 
             cancellationToken);
+
+        if (!providerResult.IsSuccess)
+        {
+            return Result.Invalid<AccessTokenDto>(providerResult.Error.Message);
+        }
         
-        var token = await externalUserRegistrationService.RegisterAsync(providerResult, cancellationToken);
+        var tokenResult = await externalUserRegistrationService.RegisterAsync(providerResult.Value, cancellationToken);
+
+        if (!tokenResult.IsSuccess)
+        {
+            return Result.Invalid<AccessTokenDto>(tokenResult.Error.Message);
+        }
         
-        return token;
+        return Result.Ok(tokenResult.Value);
     }
 }

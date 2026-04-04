@@ -1,5 +1,6 @@
 using VeloPass.Application.Abstractions;
 using VeloPass.Application.Authentication;
+using VeloPass.Domain.Abstractions;
 
 namespace VeloPass.Application.Users.RefreshUser;
 
@@ -7,14 +8,19 @@ public sealed class RefreshUserHandler(
     IJwtService jwtService
     )
 {
-    public async Task<AccessTokenDto> Handle(
+    public async Task<Result<AccessTokenDto>> Handle(
         RefreshUserCommand command, 
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
         
-        var token = await jwtService.RefreshJwtToken(command.RefreshToken, cancellationToken);
+        var tokenResult = await jwtService.RefreshJwtToken(command.RefreshToken, cancellationToken);
 
-        return token;
+        if (!tokenResult.IsSuccess)
+        {
+            return Result.Invalid<AccessTokenDto>("Invalid token");
+        }
+        
+        return Result.Ok(tokenResult.Value);
     }
 }

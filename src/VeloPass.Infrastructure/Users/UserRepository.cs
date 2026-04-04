@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Users;
 using VeloPass.Infrastructure.Data;
 
@@ -11,12 +12,17 @@ public class UserRepository(ApplicationDbContext dbContext) : IUserRepository
         dbContext.Add(user);
     }
 
-    public async Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<Result<User>> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         var user = await dbContext.Set<User>()
             .Where(user => user.Email == email)
             .FirstOrDefaultAsync(cancellationToken);
 
-        return user;
+        if (user is null)
+        {
+            return Result.NotFound<User>("User not found");
+        }
+
+        return Result.Ok(user);
     }
 }

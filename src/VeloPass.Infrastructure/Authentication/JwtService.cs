@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using VeloPass.Application.Abstractions;
 using VeloPass.Application.Authentication;
+using VeloPass.Domain.Abstractions;
 using VeloPass.Infrastructure.Data;
 
 namespace VeloPass.Infrastructure.Authentication;
@@ -24,7 +25,7 @@ public sealed class JwtService(
         return new AccessTokenDto(CreateAccessToken(request), CreateRefreshToken());
     }
 
-    public async Task<AccessTokenDto> RefreshJwtToken(string refreshToken, CancellationToken cancellationToken = default)
+    public async Task<Result<AccessTokenDto>> RefreshJwtToken(string refreshToken, CancellationToken cancellationToken = default)
     {
         var token = await applicationIdentityDbContext.Set<RefreshTokenEntity>()
             .Include(rt => rt.User)
@@ -32,12 +33,12 @@ public sealed class JwtService(
 
         if (token is null)
         {
-            throw new ArgumentNullException(nameof(refreshToken));
+            return Result.NotFound<AccessTokenDto>("Refresh token not found");
         }
 
         if (token.ExpiresAtUtc < DateTime.UtcNow)
         {
-            throw new InvalidOperationException("Refresh token is expired");
+            return Result.Invalid<AccessTokenDto>("Refresh token is expired");
         }
 
         var accessToken = GenerateJwtToken(new TokenRequest(token.User.Id));
@@ -47,7 +48,27 @@ public sealed class JwtService(
         
         await applicationIdentityDbContext.SaveChangesAsync(cancellationToken);
 
-        return accessToken;
+        return Result.Ok(accessToken);
+    }
+
+    // TODO Add UserId check
+    public async Task<Result<bool>> RevokeJwtToken(
+        string refreshToken, 
+        CancellationToken cancellationToken = default)
+    {
+        var token = await applicationIdentityDbContext.Set<RefreshTokenEntity>()
+            .FirstOrDefaultAsync(rt => rt.Token == refreshToken, cancellationToken);
+
+        if (token is null)
+        {
+            return Result.NotFound<bool>("Refresh token not found");
+        }
+        
+        applicationIdentityDbContext.Remove(token);
+        
+        await applicationIdentityDbContext.SaveChangesAsync(cancellationToken);
+        
+        return Result.Ok(true);
     }
 
     private string CreateAccessToken(TokenRequest request)

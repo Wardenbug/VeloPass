@@ -1,6 +1,7 @@
 using VeloPass.Application.Authentication;
 using VeloPass.Application.Users.RefreshUser;
 using VeloPass.Application.Users.RegisterUser;
+using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Users;
 using Wolverine;
 
@@ -21,10 +22,15 @@ internal static class AuthenticationEndpoints
         IMessageBus messageBus,
         CancellationToken cancellationToken)
     {
-        var result = await messageBus.InvokeAsync<AccessTokenDto>(
+        var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(
             new RegisterUserCommand(request.IdToken), cancellationToken);
 
-        return Results.Ok(result);
+        if (!result.IsSuccess)
+        {
+            return Results.Problem(title: result.Error.Message);
+        }
+
+        return Results.Ok(result.Value);
     }
 
     private static async Task<IResult> RefreshToken(
@@ -32,9 +38,14 @@ internal static class AuthenticationEndpoints
         IMessageBus messageBus,
         CancellationToken cancellationToken)
     {
-        var result = await messageBus.InvokeAsync<AccessTokenDto>(
+        var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(
             new RefreshUserCommand(request.RefreshToken), cancellationToken);
+        
+        if (!result.IsSuccess)
+        {
+            return Results.Problem(title: result.Error.Message);
+        }
 
-        return Results.Ok(result);
+        return Results.Ok(result.Value);
     }
 }
