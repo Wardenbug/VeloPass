@@ -48,7 +48,7 @@ internal static class AuthenticationEndpoints
             return Results.Problem(title: result.Error.Message);
         }
         
-        return Results.Ok(result.Value);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> Register(

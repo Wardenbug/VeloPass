@@ -17,5 +17,7 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
         modelBuilder.HasDefaultSchema(Schemes.Public);
 
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new OrganizationConfiguration());
+        modelBuilder.ApplyConfiguration(new OrganizationMembershipConfiguration());
     }
 }
