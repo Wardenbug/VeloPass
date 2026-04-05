@@ -31,8 +31,8 @@ public sealed class ExternalUserRegistrationService(
         await applicationDbContext.Database.UseTransactionAsync(transaction.GetDbTransaction(), cancellationToken);
         
         var user = await userRepository.FindByEmailAsync(externalIdentity.Email, cancellationToken);
-
-        if (user is not null)
+        
+        if (user.IsSuccess)
         {
             return Result.Invalid<AccessTokenDto>("Email is already registered");
         }

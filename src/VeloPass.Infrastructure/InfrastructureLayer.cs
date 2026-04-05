@@ -79,6 +79,7 @@ public static class InfrastructureLayer
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
         
         services.AddScoped<IExternalUserRegistrationService, ExternalUserRegistrationService>();
         services.AddTransient<IJwtService, JwtService>();

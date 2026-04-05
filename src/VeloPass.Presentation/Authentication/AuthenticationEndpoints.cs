@@ -14,9 +14,11 @@ internal static class AuthenticationEndpoints
     public static IEndpointRouteBuilder MapAuthenticationEndpoints(this IEndpointRouteBuilder routeBuilder)
     {
         routeBuilder.MapPost("auth/register", Register);
-        routeBuilder.MapPost("auth/refresh", RefreshToken);
+        routeBuilder.MapPost("auth/refresh", RefreshToken)
+            .RequireAuthorization();
         routeBuilder.MapPost("auth/login", Login);
-        routeBuilder.MapPost("auth/logout", Logout);
+        routeBuilder.MapPost("auth/logout", Logout)
+            .RequireAuthorization();
         
         return routeBuilder;
     }
