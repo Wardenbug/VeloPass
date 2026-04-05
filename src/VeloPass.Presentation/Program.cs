@@ -8,6 +8,8 @@ using VeloPass.Application;
 using VeloPass.Infrastructure;
 using VeloPass.Presentation;
 using VeloPass.Presentation.Authentication;
+using VeloPass.Presentation.Organizations;
+using VeloPass.Presentation.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,5 +63,7 @@ app.UseAuthorization();
 app.UseHttpsRedirection();
 
 app.MapAuthenticationEndpoints();
+app.MapOrganizationEndpoints();
+app.MapUsersEndpoints();
 
 await app.RunAsync();

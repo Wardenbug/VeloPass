@@ -8,9 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using VeloPass.Application.Abstractions;
 using VeloPass.Domain.Abstractions;
+using VeloPass.Domain.Organizations;
 using VeloPass.Domain.Users;
 using VeloPass.Infrastructure.Authentication;
 using VeloPass.Infrastructure.Data;
+using VeloPass.Infrastructure.Organizations;
 using VeloPass.Infrastructure.Users;
 
 namespace VeloPass.Infrastructure;
@@ -74,7 +76,10 @@ public static class InfrastructureLayer
             configuration.GetSection(GoogleOptions.Google));
         
         services.AddScoped<IExternalIdentityTokenValidator, ExternalIdentityTokenValidator>();
+        
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        
         services.AddScoped<IExternalUserRegistrationService, ExternalUserRegistrationService>();
         services.AddTransient<IJwtService, JwtService>();
 
