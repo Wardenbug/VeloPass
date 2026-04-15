@@ -1,4 +1,5 @@
 using VeloPass.Domain.Abstractions;
+using VeloPass.Domain.Users.Events;
 
 namespace VeloPass.Domain.Users;
 
@@ -21,6 +22,10 @@ public sealed class User : Entity
 
     public static User Create(string identityId, string name, string email)
     {
-        return new User(Guid.CreateVersion7(), identityId, name, email);
+        var user = new User(Guid.CreateVersion7(), identityId, name, email);
+
+        user.RaiseDomainEvent(new UserCreatedDomainEvent(email));
+        
+        return user;
     }
 }

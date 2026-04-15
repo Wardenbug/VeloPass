@@ -25,7 +25,7 @@ public sealed class RegisterUserHandler(
         }
         
         var tokenResult = await externalUserRegistrationService.RegisterAsync(providerResult.Value, cancellationToken);
-
+        
         if (!tokenResult.IsSuccess)
         {
             return Result.Invalid<AccessTokenDto>(tokenResult.Error.Message);

@@ -1,4 +1,6 @@
 using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +14,9 @@ using VeloPass.Domain.Organizations;
 using VeloPass.Domain.Users;
 using VeloPass.Infrastructure.Authentication;
 using VeloPass.Infrastructure.Data;
+using VeloPass.Infrastructure.Email;
 using VeloPass.Infrastructure.Organizations;
+using VeloPass.Infrastructure.Outbox;
 using VeloPass.Infrastructure.Users;
 
 namespace VeloPass.Infrastructure;
@@ -71,9 +75,18 @@ public static class InfrastructureLayer
         services.AddAuthorization();
 
 
-   
+        services.AddHangfire(config =>
+            config.UsePostgreSqlStorage(options =>
+                options.UseNpgsqlConnection(connectionString)));
+        
+        services.AddHangfireServer(options => 
+            options.SchedulePollingInterval = TimeSpan.FromSeconds(1));
+        
+        
         services.Configure<GoogleOptions>(
             configuration.GetSection(GoogleOptions.Google));
+        services.Configure<EmailOptions>(
+            configuration.GetSection(EmailOptions.SectionName));
         
         services.AddScoped<IExternalIdentityTokenValidator, ExternalIdentityTokenValidator>();
         
@@ -82,6 +95,9 @@ public static class InfrastructureLayer
         services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
         
         services.AddScoped<IExternalUserRegistrationService, ExternalUserRegistrationService>();
+        services.AddScoped<IEmailSender, EmailSender>();
+        services.AddScoped<IOutboxProcessor,  OutboxProcessor>();
+        
         services.AddTransient<IJwtService, JwtService>();
 
         services.AddScoped<IUnitOfWork>(serviceProvider =>

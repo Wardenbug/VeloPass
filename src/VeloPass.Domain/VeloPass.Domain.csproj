@@ -15,7 +15,6 @@
 
     <ItemGroup>
       <Folder Include="Organizations\Events\" />
-      <Folder Include="Users\Events\" />
     </ItemGroup>
 
 </Project>

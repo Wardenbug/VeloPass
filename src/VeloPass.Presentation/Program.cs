@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Hangfire;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -6,6 +7,7 @@ using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using VeloPass.Application;
 using VeloPass.Infrastructure;
+using VeloPass.Infrastructure.Outbox;
 using VeloPass.Presentation;
 using VeloPass.Presentation.Authentication;
 using VeloPass.Presentation.Organizations;
@@ -49,10 +51,21 @@ builder.Logging.AddOpenTelemetry(options =>
 
 var app = builder.Build();
 
+var recurringJobs = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobs.AddOrUpdate<IOutboxProcessor>(
+    "outbox-processor",
+    processor => processor.ProcessAsync(),
+    "0/5 * * * * *");
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+
+    app.UseHangfireDashboard(options: new DashboardOptions
+    {
+        Authorization = []
+    });
 }
 app.UseRouting();
 app.UseCors("FrontendAppPolicy");
