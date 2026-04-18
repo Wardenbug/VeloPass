@@ -10,6 +10,7 @@ using VeloPass.Infrastructure;
 using VeloPass.Infrastructure.Outbox;
 using VeloPass.Presentation;
 using VeloPass.Presentation.Authentication;
+using VeloPass.Presentation.Invites;
 using VeloPass.Presentation.Organizations;
 using VeloPass.Presentation.Users;
 
@@ -78,5 +79,6 @@ app.UseHttpsRedirection();
 app.MapAuthenticationEndpoints();
 app.MapOrganizationEndpoints();
 app.MapUsersEndpoints();
+app.MapInvitesEndpoints();
 
 await app.RunAsync();

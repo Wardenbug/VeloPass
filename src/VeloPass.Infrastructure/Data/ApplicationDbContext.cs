@@ -54,5 +54,6 @@ public sealed class ApplicationDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new OrganizationConfiguration());
         modelBuilder.ApplyConfiguration(new OrganizationMembershipConfiguration());
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        modelBuilder.ApplyConfiguration(new InviteConfiguration());
     }
 }

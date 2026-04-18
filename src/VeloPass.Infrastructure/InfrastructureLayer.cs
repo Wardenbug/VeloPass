@@ -10,11 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using VeloPass.Application.Abstractions;
 using VeloPass.Domain.Abstractions;
+using VeloPass.Domain.Invites;
 using VeloPass.Domain.Organizations;
 using VeloPass.Domain.Users;
 using VeloPass.Infrastructure.Authentication;
 using VeloPass.Infrastructure.Data;
 using VeloPass.Infrastructure.Email;
+using VeloPass.Infrastructure.Invites;
 using VeloPass.Infrastructure.Organizations;
 using VeloPass.Infrastructure.Outbox;
 using VeloPass.Infrastructure.Users;
@@ -93,6 +95,7 @@ public static class InfrastructureLayer
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
+        services.AddScoped<IInviteRepository, InviteRepository>();
         
         services.AddScoped<IExternalUserRegistrationService, ExternalUserRegistrationService>();
         services.AddScoped<IEmailSender, EmailSender>();
