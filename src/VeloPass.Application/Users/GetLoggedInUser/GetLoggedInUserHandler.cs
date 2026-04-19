@@ -12,7 +12,7 @@ public class GetLoggedInUserHandler(
     {
         ArgumentNullException.ThrowIfNull(query);
         
-        var userResult = await userRepository.FindByIdAsync(query.UserId, cancellationToken);
+        var userResult = await userRepository.FindByIdAsync(query.UserId.ToString(), cancellationToken);
 
         if (!userResult.IsSuccess)
         {
@@ -20,7 +20,7 @@ public class GetLoggedInUserHandler(
         }
         
         var organizationMembership = await organizationMembershipRepository
-            .GetOrganizationMembershipByUserIdAsync(query.UserId, cancellationToken);
+            .GetOrganizationsMembershipByUserIdAsync(query.UserId, cancellationToken);
 
         var items = organizationMembership
             .Select(om => new OrganizationMembershipItemDto(om.OrganizationId.ToString(), om.Role.ToString()))

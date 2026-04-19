@@ -25,7 +25,12 @@ internal static class UsersEndpoints
             return Results.BadRequest();
         }
 
-        var userResult = await messageBus.InvokeAsync<Result<GetLoggedInUserDto>>(new GetLoggedInUserQuery(sub.Value), cancellationToken);
+
+        if (!Guid.TryParse(sub.Value, out var userId))
+        {
+            return Results.BadRequest();
+        }
+        var userResult = await messageBus.InvokeAsync<Result<GetLoggedInUserDto>>(new GetLoggedInUserQuery(userId), cancellationToken);
 
         if (!userResult.IsSuccess)
         {

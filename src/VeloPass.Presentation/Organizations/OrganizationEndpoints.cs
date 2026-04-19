@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using VeloPass.Application.Organizations.Create;
+using VeloPass.Application.Organizations.DeleteMember;
 using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Organizations;
+using VeloPass.Presentation.Extensions;
 using Wolverine;
 
 namespace VeloPass.Presentation.Organizations;
@@ -10,8 +12,9 @@ internal static class OrganizationEndpoints
 {
     public static IEndpointRouteBuilder MapOrganizationEndpoints(this IEndpointRouteBuilder routeBuilder)
     {
-
         routeBuilder.MapPost("organizations", Create)
+            .RequireAuthorization();
+        routeBuilder.MapDelete("organizations/{organizationId:guid}/members/{id:guid}", DeleteMember)
             .RequireAuthorization();
         return routeBuilder;
     }
@@ -38,5 +41,30 @@ internal static class OrganizationEndpoints
         }
         
         return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult>
+        DeleteMember(Guid organizationId, Guid id, IMessageBus messageBus, ClaimsPrincipal principal,
+        CancellationToken cancellationToken)
+    {
+
+        if (!principal.TryGetUserId(out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!Guid.TryParse(userId, out var idGuid))
+        {
+            return Results.BadRequest();
+        }
+
+        var result = await messageBus.InvokeAsync<Result<bool>>(new DeleteMemberCommand(idGuid, id, organizationId), cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(result.Error.Message);
+        }
+
+        return Results.NoContent();
     }
 }
