@@ -20,6 +20,17 @@ public sealed class OrganizationMembershipRepository(ApplicationDbContext dbCont
         return result;
     }
 
+    public async Task<IReadOnlyCollection<OrganizationMembership>> GetOrganizationsMembershipByOrganizationIdAsync(
+        Guid organizationId, CancellationToken cancellationToken = default)
+    {
+        var result = await dbContext.Set<OrganizationMembership>()
+            .AsNoTracking()
+            .Where(om => om.OrganizationId == organizationId)
+            .ToListAsync(cancellationToken);
+
+        return result;
+    }
+
     public async Task<OrganizationMembership?> GetOrganizationMembershipByUserIdAsync(Guid userId, Guid organizationId,
         CancellationToken cancellationToken = default)
     {
