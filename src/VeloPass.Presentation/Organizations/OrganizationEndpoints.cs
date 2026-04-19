@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using VeloPass.Application.Organizations.Create;
 using VeloPass.Application.Organizations.DeleteMember;
+using VeloPass.Application.Organizations.GetById;
 using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Organizations;
 using VeloPass.Presentation.Extensions;
@@ -16,7 +17,35 @@ internal static class OrganizationEndpoints
             .RequireAuthorization();
         routeBuilder.MapDelete("organizations/{organizationId:guid}/members/{id:guid}", DeleteMember)
             .RequireAuthorization();
+
+        routeBuilder.MapGet("organizations/{organizationId:guid}", GetOrganizationById);
         return routeBuilder;
+    }
+
+    private static async Task<IResult> GetOrganizationById(Guid organizationId, IMessageBus messageBus,
+        ClaimsPrincipal principal, CancellationToken cancellationToken)
+    {
+        if (!principal.TryGetUserId(out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!Guid.TryParse(userId, out var idGuid))
+        {
+            return Results.BadRequest();
+        }
+
+        var organization =
+            await messageBus.InvokeAsync<Result<Organization>>(new GetOrganizationByIdQuery(organizationId, idGuid),
+                cancellationToken);
+
+        
+        if (!organization.IsSuccess)
+        {
+            return Results.BadRequest(organization.Error.Message);
+        }
+        
+        return Results.Ok(organization.Value);
     }
 
     private static async Task<IResult> Create(
