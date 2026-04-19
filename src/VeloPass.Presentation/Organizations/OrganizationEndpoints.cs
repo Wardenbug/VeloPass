@@ -18,7 +18,8 @@ internal static class OrganizationEndpoints
         routeBuilder.MapDelete("organizations/{organizationId:guid}/members/{id:guid}", DeleteMember)
             .RequireAuthorization();
 
-        routeBuilder.MapGet("organizations/{organizationId:guid}", GetOrganizationById);
+        routeBuilder.MapGet("organizations/{organizationId:guid}", GetOrganizationById)
+            .RequireAuthorization();
         return routeBuilder;
     }
 
