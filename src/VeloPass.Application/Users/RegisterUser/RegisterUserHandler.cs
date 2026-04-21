@@ -7,7 +7,7 @@ namespace VeloPass.Application.Users.RegisterUser;
 
 public sealed class RegisterUserHandler(
     IExternalIdentityTokenValidator identityTokenValidator,
-    IExternalUserRegistrationService externalUserRegistrationService)
+    IUserRegistrationService userRegistrationService)
 {
     
     public async Task<Result<AccessTokenDto>> Handle(RegisterUserCommand command, CancellationToken cancellationToken = default)
@@ -24,7 +24,7 @@ public sealed class RegisterUserHandler(
             return Result.Invalid<AccessTokenDto>(providerResult.Error.Message);
         }
         
-        var tokenResult = await externalUserRegistrationService.RegisterAsync(providerResult.Value, cancellationToken);
+        var tokenResult = await userRegistrationService.RegisterByExternalProviderAsync(providerResult.Value, cancellationToken);
         
         if (!tokenResult.IsSuccess)
         {

@@ -29,6 +29,11 @@ public sealed class Invite : Entity
     public DateTime ExpiredAtUtc { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
     public DateTime? AcceptedAtUtc { get; private set; }
+    
+    public bool IsExpired(DateTime nowUtc)
+    {
+        return nowUtc > ExpiredAtUtc;
+    }
 
     public static Invite Create(string email, OrganizationRole role, Guid invitedByUserId, Guid organizationId,
         string token, DateTime expiredAtUtc)

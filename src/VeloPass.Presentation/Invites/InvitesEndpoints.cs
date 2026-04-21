@@ -1,4 +1,7 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
+using VeloPass.Application.Authentication;
+using VeloPass.Application.Invites.ApplyInvite;
 using VeloPass.Application.Invites.CreateInvite;
 using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Invites;
@@ -14,6 +17,9 @@ internal static class InvitesEndpoints
     {
         endpoints.MapPost("invites", Create)
             .RequireAuthorization();
+
+        endpoints.MapPost("invites/accept", AcceptInvite)
+            .AllowAnonymous();
         
         return endpoints;
     }
@@ -39,5 +45,18 @@ internal static class InvitesEndpoints
          }
          
          return Results.Ok(invite.Value);
+    }
+
+    private static async Task<IResult> AcceptInvite([FromQuery] string token, IMessageBus messageBus,
+        CancellationToken cancellationToken)
+    {
+        var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(new AcceptInviteCommand(token), cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(result.Error.Message);
+        }
+        
+        return Results.Ok(result.Value);
     }
 }

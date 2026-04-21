@@ -35,6 +35,7 @@ internal sealed class OrganizationRepository(ApplicationDbContext applicationDbC
     {
         var org  = await _organizationDbSet
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+        
         if (org is null)
         {
             return Result.NotFound<Organization>("Organization not found");

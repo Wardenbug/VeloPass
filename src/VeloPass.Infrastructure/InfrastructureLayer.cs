@@ -97,7 +97,7 @@ public static class InfrastructureLayer
         services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
         services.AddScoped<IInviteRepository, InviteRepository>();
         
-        services.AddScoped<IExternalUserRegistrationService, ExternalUserRegistrationService>();
+        services.AddScoped<IUserRegistrationService, UserRegistrationService>();
         services.AddScoped<IEmailSender, EmailSender>();
         services.AddScoped<IOutboxProcessor,  OutboxProcessor>();
         
