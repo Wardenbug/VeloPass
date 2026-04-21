@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using VeloPass.Application.Authentication;
 using VeloPass.Application.Invites.ApplyInvite;
+using VeloPass.Application.Invites.CancelInvite;
 using VeloPass.Application.Invites.CreateInvite;
 using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Invites;
@@ -17,6 +18,8 @@ internal static class InvitesEndpoints
     {
         endpoints.MapPost("invites", Create)
             .RequireAuthorization();
+
+        endpoints.MapDelete("invites/{id:guid}", CancelInvite);
 
         endpoints.MapPost("invites/accept", AcceptInvite)
             .AllowAnonymous();
@@ -58,5 +61,23 @@ internal static class InvitesEndpoints
         }
         
         return Results.Ok(result.Value);
+    }
+
+    private static async Task<IResult> CancelInvite(Guid id, IMessageBus messageBus, ClaimsPrincipal principal,
+        CancellationToken cancellationToken)
+    {
+        if (!principal.TryGetUserId(out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await messageBus.InvokeAsync<Result<bool>>(new CancelInviteCommand(id, userId), cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            return Results.BadRequest(result.Error.Message);
+        }
+
+        return Results.NoContent();
     }
 }

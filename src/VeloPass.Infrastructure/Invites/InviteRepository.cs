@@ -30,4 +30,17 @@ internal sealed class InviteRepository(ApplicationDbContext dbContext) : IInvite
         
         return Result.Ok(invite);
     }
+    
+    public async Task<Result<Invite>> GetByIdAsync(Guid inviteId, CancellationToken cancellationToken = default)
+    {
+        var invite = await dbContext.Set<Invite>()
+            .FirstOrDefaultAsync(i => i.Id == inviteId && i.AcceptedAtUtc == null, cancellationToken);
+        
+        if (invite is null)
+        {
+            return Result.NotFound<Invite>("Invite not found");
+        }
+        
+        return Result.Ok(invite);
+    }
 }
