@@ -52,6 +52,11 @@ public sealed class OrganizationMembershipRepository(ApplicationDbContext dbCont
         {
             return false;
         }
+
+        if (user.Role == OrganizationRole.Owner)
+        {
+            return false;
+        }
         
         dbContext.Remove(user);
 

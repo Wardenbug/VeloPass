@@ -30,7 +30,7 @@ internal static class InvitesEndpoints
          }
          
          var invite = await messageBus.InvokeAsync<Result<Invite>>(
-             new CreateInviteCommand(request.Email, OrganizationRole.Member, Guid.Parse(userId),
+             new CreateInviteCommand(request.Email, OrganizationRole.Member, userId,
                  request.OrganizationId), cancellationToken);
 
          if (!invite.IsSuccess)
