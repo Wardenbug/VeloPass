@@ -2,9 +2,9 @@ using VeloPass.Domain.Abstractions;
 
 namespace VeloPass.Domain.Organizations;
 
-public sealed class OrganizationMembership : Entity
+public sealed class OrganizationMember : Entity
 {
-    private OrganizationMembership(
+    private OrganizationMember(
         Guid id,
         Guid organizationId,
         Guid userId,
@@ -15,7 +15,7 @@ public sealed class OrganizationMembership : Entity
         Role = role;
     }
 
-    private OrganizationMembership()
+    private OrganizationMember()
     {
     }
 
@@ -23,12 +23,12 @@ public sealed class OrganizationMembership : Entity
     public Guid UserId { get; private set; }
     public OrganizationRole Role { get; private set; }
 
-    public static OrganizationMembership Create(
+    public static OrganizationMember Create(
         Guid organizationId,
         Guid userId,
         OrganizationRole role)
     {
-        return new OrganizationMembership(
+        return new OrganizationMember(
             Guid.CreateVersion7(),
             organizationId,
             userId,
@@ -39,4 +39,6 @@ public sealed class OrganizationMembership : Entity
     {
         Role = newRole;
     }
+    
+    public bool CanManageMembers() => Role.IsPrivileged();
 }

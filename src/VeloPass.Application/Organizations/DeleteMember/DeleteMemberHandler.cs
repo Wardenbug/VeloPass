@@ -4,33 +4,24 @@ using VeloPass.Domain.Organizations;
 namespace VeloPass.Application.Organizations.DeleteMember;
 
 public class DeleteMemberHandler(IUnitOfWork unitOfWork,
-    IOrganizationMembershipRepository membershipRepository)
+    IOrganizationRepository organizationRepository)
 {
     public async Task<Result<bool>> Handle(DeleteMemberCommand command, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
         
-        var currentMember =
-            await membershipRepository.GetOrganizationMembershipByUserIdAsync(command.CallerId,
-                command.OrganizationId, cancellationToken);
-
-        if (currentMember is null)
+        var orgResult = await organizationRepository.FindByIdAsync(command.OrganizationId, cancellationToken);
+        
+        if (!orgResult.IsSuccess)
         {
-            return Result.Invalid<bool>("You don’t have access to this organization");
+            return Result.NotFound<bool>("Organization not found");
         }
-
-        if (currentMember.Role != OrganizationRole.Admin && currentMember.Role != OrganizationRole.Owner)
+        
+        var result = orgResult.Value.RemoveMember(command.CallerId, command.MemberId);
+        
+        if (!result.IsSuccess)
         {
-            return Result.Invalid<bool>("You don’t have permission to manage members");
-        }
-
-        var result =
-            await membershipRepository.DeleteOrganizationMembershipByUserIdAsync(command.MemberId,
-                command.OrganizationId, cancellationToken);
-
-        if (!result)
-        {
-            return Result.Invalid<bool>("Member could not be removed");
+            return result;
         }
         
         await unitOfWork.SaveChangesAsync(cancellationToken);

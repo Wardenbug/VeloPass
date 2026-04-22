@@ -6,7 +6,7 @@ namespace VeloPass.Application.Users.GetLoggedInUser;
 
 public class GetLoggedInUserHandler(
     IUserRepository userRepository,
-    IOrganizationMembershipRepository organizationMembershipRepository)
+    IOrganizationMembersRepository organizationMembersRepository)
 {
     public async Task<Result<GetLoggedInUserDto>> Handle(GetLoggedInUserQuery query, CancellationToken cancellationToken)
     {
@@ -19,11 +19,11 @@ public class GetLoggedInUserHandler(
             return Result.NotFound<GetLoggedInUserDto>("User not found");
         }
         
-        var organizationMembership = await organizationMembershipRepository
-            .GetOrganizationsMembershipByUserIdAsync(query.UserId, cancellationToken);
+        var organizationMembers = await organizationMembersRepository
+            .GetOrganizationMembersByUserIdAsync(query.UserId, cancellationToken);
 
-        var items = organizationMembership
-            .Select(om => new OrganizationMembershipItemDto(om.OrganizationId.ToString(), om.Role.ToString()))
+        var items = organizationMembers
+            .Select(om => new OrganizationMemberItemDto(om.OrganizationId.ToString(), om.Role.ToString()))
             .ToList();
         
         return Result.Ok(new GetLoggedInUserDto(

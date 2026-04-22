@@ -5,14 +5,14 @@ namespace VeloPass.Application.Organizations.GetById;
 
 public class GetOrganizationByIdQueryHandler(
     IOrganizationRepository repository,
-    IOrganizationMembershipRepository membershipRepository)
+    IOrganizationMembersRepository membersRepository)
 {
     public async Task<Result<Organization>> Handle(GetOrganizationByIdQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
         
         var member =
-            await membershipRepository.GetOrganizationMembershipByUserIdAsync(query.UserId, query.OrganizationId,
+            await membersRepository.GetOrganizationMemberByUserIdAsync(query.UserId, query.OrganizationId,
                 cancellationToken);
 
         if (member is null)

@@ -58,7 +58,7 @@ internal static class OrganizationEndpoints
         }
         
         var result =
-            await messageBus.InvokeAsync<Result<IReadOnlyCollection<OrganizationMembership>>>(
+            await messageBus.InvokeAsync<Result<IReadOnlyCollection<OrganizationMember>>>(
                 new GetMembersByIdQuery(organizationId, userId), cancellationToken);
 
         return result.ToHttpResult();

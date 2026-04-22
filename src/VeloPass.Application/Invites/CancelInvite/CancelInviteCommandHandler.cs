@@ -7,7 +7,7 @@ namespace VeloPass.Application.Invites.CancelInvite;
 public sealed class CancelInviteCommandHandler(
     IInviteRepository inviteRepository,
     IUnitOfWork unitOfWork,
-    IOrganizationRepository organizationRepository)
+    IOrganizationMembersRepository memberRepository)
 {
     public async Task<Result<bool>> Handle(CancelInviteCommand command, CancellationToken cancellationToken)
     {
@@ -22,21 +22,18 @@ public sealed class CancelInviteCommandHandler(
         
         var invite = inviteResult.Value;
         
-        var membershipResult = await organizationRepository.FindMembershipByUserIdAsync(
-            command.UserId,
-            invite.OrganizationId,
-            cancellationToken);
+        var member =
+            await memberRepository.GetOrganizationMemberByUserIdAsync(command.UserId, invite.OrganizationId,
+                cancellationToken);
         
-        if (!membershipResult.IsSuccess)
+        if (member is null)
         {
             return Result.Invalid<bool>("User is not a member of organization");
         }
         
-        var role = membershipResult.Value.Role;
-        var isPrivileged = role == OrganizationRole.Owner || role == OrganizationRole.Admin;
         var isInviter = invite.InvitedByUserId == command.UserId;
         
-        if (!isPrivileged && !isInviter)
+        if (!member.CanManageMembers() && !isInviter)
         {
             return Result.Invalid<bool>("User is not allowed to cancel this invite");
         }

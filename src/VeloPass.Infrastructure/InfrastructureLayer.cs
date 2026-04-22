@@ -94,7 +94,7 @@ public static class InfrastructureLayer
         
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
-        services.AddScoped<IOrganizationMembershipRepository, OrganizationMembershipRepository>();
+        services.AddScoped<IOrganizationMembersRepository, OrganizationMembersRepository>();
         services.AddScoped<IInviteRepository, InviteRepository>();
         
         services.AddScoped<IUserRegistrationService, UserRegistrationService>();

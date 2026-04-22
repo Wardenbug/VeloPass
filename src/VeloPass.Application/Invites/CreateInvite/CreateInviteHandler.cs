@@ -9,7 +9,7 @@ namespace VeloPass.Application.Invites.CreateInvite;
 
 public class CreateInviteHandler(
     IUnitOfWork unitOfWork,
-    IOrganizationRepository organizationRepository,
+    IOrganizationMembersRepository memberRepository,
     IInviteRepository inviteRepository,
     IUserRepository userRepository)
 {
@@ -17,17 +17,17 @@ public class CreateInviteHandler(
     {
         ArgumentNullException.ThrowIfNull(command);
         
-        var member = await organizationRepository
-            .FindMembershipByUserIdAsync(command.InvitedByUserId, command.OrganizationId, cancellationToken);
-            
-        if (!member.IsSuccess)
+        var member = await memberRepository.GetOrganizationMemberByUserIdAsync(command.InvitedByUserId,command.OrganizationId, cancellationToken);
+
+        if (member is null)
         {
             return Result.NotFound<Invite>("Member not found");
         }
 
-        if (member.Value.Role != OrganizationRole.Admin && member.Value.Role != OrganizationRole.Owner)
+        if (!member.CanManageMembers())
         {
-            return Result.Invalid<Invite>("Invite role not allowed");
+            return Result.Invalid<Invite>("Invite not allowed");
+            
         }
         
         var user = await userRepository.FindByEmailAsync(command.Email, cancellationToken);
@@ -38,10 +38,11 @@ public class CreateInviteHandler(
         }
         
         var userInOrganization =
-            await organizationRepository.FindMembershipByEmailAsync(command.Email, command.OrganizationId,
+            await memberRepository.FindMemberByEmailAsync(command.Email, command.OrganizationId,
                 cancellationToken);
 
-        if (userInOrganization.IsSuccess)
+        
+        if(userInOrganization is not null)
         {
             return Result.Invalid<Invite>("User is already member of organization");
         }

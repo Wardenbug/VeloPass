@@ -14,12 +14,12 @@ internal sealed class OrganizationConfiguration : IEntityTypeConfiguration<Organ
 
         builder.Property(o => o.Name).HasMaxLength(256).IsRequired();
 
-        builder.HasMany(o => o.Memberships)
+        builder.HasMany(o => o.Members)
             .WithOne()
             .HasForeignKey(m => m.OrganizationId)
             .OnDelete(DeleteBehavior.Cascade);
         
 
-        builder.Navigation(o => o.Memberships).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.Navigation(o => o.Members).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

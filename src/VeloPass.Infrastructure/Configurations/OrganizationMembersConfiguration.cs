@@ -5,11 +5,11 @@ using VeloPass.Domain.Users;
 
 namespace VeloPass.Infrastructure.Configurations;
 
-internal sealed class OrganizationMembershipConfiguration : IEntityTypeConfiguration<OrganizationMembership>
+internal sealed class OrganizationMembersConfiguration : IEntityTypeConfiguration<OrganizationMember>
 {
-    public void Configure(EntityTypeBuilder<OrganizationMembership> builder)
+    public void Configure(EntityTypeBuilder<OrganizationMember> builder)
     {
-        builder.ToTable("organization_memberships");
+        builder.ToTable("organization_members");
 
         builder.HasKey(m => m.Id);
 

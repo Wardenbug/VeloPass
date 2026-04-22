@@ -4,24 +4,24 @@ using VeloPass.Domain.Organizations;
 
 namespace VeloPass.Application.Organizations.GetMembers;
 
-public sealed class GetMembersByIdQueryHandler(IOrganizationMembershipRepository membershipRepository)
+public sealed class GetMembersByIdQueryHandler(IOrganizationMembersRepository membersRepository)
 {
-    public async Task<Result<IReadOnlyCollection<OrganizationMembership>>>
+    public async Task<Result<IReadOnlyCollection<OrganizationMember>>>
         Handle(GetMembersByIdQuery query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
         
         var member =
-            await membershipRepository.GetOrganizationMembershipByUserIdAsync(query.UserId, query.OrganizationId,
+            await membersRepository.GetOrganizationMemberByUserIdAsync(query.UserId, query.OrganizationId,
                 cancellationToken);
 
         if (member is null)
         {
-            return Result.Invalid<IReadOnlyCollection<OrganizationMembership>>("Organization not found");
+            return Result.Invalid<IReadOnlyCollection<OrganizationMember>>("Organization not found");
         }
         
         var members = await 
-            membershipRepository.GetOrganizationsMembershipByOrganizationIdAsync(query.OrganizationId,
+            membersRepository.GetOrganizationMembersByOrganizationIdAsync(query.OrganizationId,
                 cancellationToken);
 
         return Result.Ok(members);
