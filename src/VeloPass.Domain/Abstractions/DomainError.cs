@@ -10,4 +10,6 @@ public sealed record DomainError(string Code, string Name)
     
     public static readonly DomainError Invalid = new("DomainError.Invalid", "Invalid error");
     
+    public static readonly DomainError Unauthorized = new("DomainError.Unauthorized", "Unauthorized");
+    
 }

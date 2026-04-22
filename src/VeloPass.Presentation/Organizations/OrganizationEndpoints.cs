@@ -17,6 +17,7 @@ internal static class OrganizationEndpoints
     {
         routeBuilder.MapPost("organizations", Create)
             .RequireAuthorization();
+        
         routeBuilder.MapDelete("organizations/{organizationId:guid}/members/{id:guid}", DeleteMember)
             .RequireAuthorization();
 
@@ -40,17 +41,12 @@ internal static class OrganizationEndpoints
             return Results.Unauthorized();
         }
 
-        var organization =
+        var result =
             await messageBus.InvokeAsync<Result<Organization>>(new GetOrganizationByIdQuery(organizationId, userId),
                 cancellationToken);
 
-        
-        if (!organization.IsSuccess)
-        {
-            return Results.BadRequest(organization.Error.Message);
-        }
-        
-        return Results.Ok(organization.Value);
+
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> GetMembersById(Guid organizationId, IMessageBus messageBus,
@@ -61,16 +57,11 @@ internal static class OrganizationEndpoints
             return Results.Unauthorized();
         }
         
-        var members =
+        var result =
             await messageBus.InvokeAsync<Result<IReadOnlyCollection<OrganizationMembership>>>(
                 new GetMembersByIdQuery(organizationId, userId), cancellationToken);
 
-        if (!members.IsSuccess)
-        {
-            return Results.BadRequest(members.Error.Message);
-        }
-        
-        return Results.Ok(members.Value);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> Create(
@@ -79,22 +70,15 @@ internal static class OrganizationEndpoints
         IMessageBus messageBus, 
         CancellationToken cancellationToken)
     {
-        var sub = principal.FindFirst(ClaimTypes.NameIdentifier);
-
-        if (sub is null)
+        if (!principal.TryGetUserId(out var userId))
         {
-            return Results.BadRequest();
+            return Results.Unauthorized();
         }
         
         var result = await messageBus.InvokeAsync<Result<Organization>>(
-            new CreateOrganizationCommand(request.Name, sub.Value), cancellationToken);
+            new CreateOrganizationCommand(request.Name, userId), cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest();
-        }
-        
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult>
@@ -107,15 +91,9 @@ internal static class OrganizationEndpoints
             return Results.Unauthorized();
         }
         
-
         var result = await messageBus.InvokeAsync<Result<bool>>(new DeleteMemberCommand(userId, id, organizationId), cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest(result.Error.Message);
-        }
-
-        return Results.NoContent();
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> ChangeRole(ChangeRoleRequest request, Guid organizationId, Guid id,
@@ -130,11 +108,6 @@ internal static class OrganizationEndpoints
         var result = await messageBus.InvokeAsync<Result<bool>>(new ChangeMemberRoleCommand(userId, id, organizationId, request.Role),
             cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest();
-        }
-        
-        return Results.NoContent();
+        return result.ToHttpResult();
     }
 }

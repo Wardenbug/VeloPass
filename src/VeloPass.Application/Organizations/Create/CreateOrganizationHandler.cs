@@ -20,7 +20,7 @@ public sealed class CreateOrganizationHandler(
             return Result.Invalid<Organization>("Organization with this name already exists");
         }
 
-        var organization = Organization.Create(command.Name, Guid.Parse(command.OwnerId));
+        var organization = Organization.Create(command.Name, command.OwnerId);
         
         repository.Add(organization);
         

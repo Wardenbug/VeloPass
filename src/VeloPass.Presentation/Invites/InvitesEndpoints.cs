@@ -19,7 +19,8 @@ internal static class InvitesEndpoints
         endpoints.MapPost("invites", Create)
             .RequireAuthorization();
 
-        endpoints.MapDelete("invites/{id:guid}", CancelInvite);
+        endpoints.MapDelete("invites/{id:guid}", CancelInvite)
+            .RequireAuthorization();
 
         endpoints.MapPost("invites/accept", AcceptInvite)
             .AllowAnonymous();
@@ -55,12 +56,7 @@ internal static class InvitesEndpoints
     {
         var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(new AcceptInviteCommand(token), cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.BadRequest(result.Error.Message);
-        }
-        
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> CancelInvite(Guid id, IMessageBus messageBus, ClaimsPrincipal principal,

@@ -5,6 +5,7 @@ using VeloPass.Application.Users.RefreshUser;
 using VeloPass.Application.Users.RegisterUser;
 using VeloPass.Domain.Abstractions;
 using VeloPass.Domain.Users;
+using VeloPass.Presentation.Extensions;
 using Wolverine;
 
 namespace VeloPass.Presentation.Authentication;
@@ -13,10 +14,12 @@ internal static class AuthenticationEndpoints
 {
     public static IEndpointRouteBuilder MapAuthenticationEndpoints(this IEndpointRouteBuilder routeBuilder)
     {
-        routeBuilder.MapPost("auth/register", Register);
+        routeBuilder.MapPost("auth/register", Register)
+            .AllowAnonymous();
         routeBuilder.MapPost("auth/refresh", RefreshToken)
             .RequireAuthorization();
-        routeBuilder.MapPost("auth/login", Login);
+        routeBuilder.MapPost("auth/login", Login)
+            .AllowAnonymous();
         routeBuilder.MapPost("auth/logout", Logout)
             .RequireAuthorization();
         
@@ -30,12 +33,7 @@ internal static class AuthenticationEndpoints
     {
         var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(command, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.Problem(title: result.Error.Message);
-        }
-        
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
     
     private static async Task<IResult> Logout(
@@ -45,12 +43,7 @@ internal static class AuthenticationEndpoints
     {
         var result = await messageBus.InvokeAsync<Result<bool>>(command, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.Problem(title: result.Error.Message);
-        }
-        
-        return Results.NoContent();
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> Register(
@@ -61,12 +54,7 @@ internal static class AuthenticationEndpoints
         var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(
             new RegisterUserCommand(request.IdToken), cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            return Results.Problem(title: result.Error.Message);
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 
     private static async Task<IResult> RefreshToken(
@@ -77,11 +65,6 @@ internal static class AuthenticationEndpoints
         var result = await messageBus.InvokeAsync<Result<AccessTokenDto>>(
             new RefreshUserCommand(request.RefreshToken), cancellationToken);
         
-        if (!result.IsSuccess)
-        {
-            return Results.Problem(title: result.Error.Message);
-        }
-
-        return Results.Ok(result.Value);
+        return result.ToHttpResult();
     }
 }
