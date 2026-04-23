@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hangfire;
@@ -10,18 +9,22 @@ using Scalar.AspNetCore;
 using VeloPass.Application;
 using VeloPass.Infrastructure;
 using VeloPass.Infrastructure.Outbox;
-using VeloPass.Presentation;
 using VeloPass.Presentation.Authentication;
 using VeloPass.Presentation.Invites;
 using VeloPass.Presentation.Organizations;
 using VeloPass.Presentation.Users;
+using VeloPass.Presentation.SchemeTransformers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddInfrastructureLayer(builder.Configuration);
 builder.Services.AddApplicationLayer(builder.Host);
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
+
 
 builder.Services.AddCors(options =>
 {
